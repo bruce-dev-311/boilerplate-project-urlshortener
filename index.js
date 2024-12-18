@@ -21,6 +21,8 @@ const urlSchema = new mongoose.Schema({
 
 const URL = mongoose.model("URL", urlSchema);
 
+let shortUrlCounter = 1;
+
 app.use(cors());
 
 app.use('/public', express.static(`${process.cwd()}/public`));
@@ -37,10 +39,15 @@ app.get('/api/hello', function(req, res) {
 app.post("/api/shorturl", async (req, res) => {
   const originalUrl = req.body.url;
   const parsedUrl = url.parse(originalUrl);
-
+  console.log("originalUrl", originalUrl);
+  console.log("parsedUrl", parsedUrl);
   // Validate URL using dns.lookup
+  if (!parsedUrl.hostname) {
+    return res.json({ error: "invalid url" });
+  }
   dns.lookup(parsedUrl.hostname, async (err) => {
-    if (err || !parsedUrl.protocol) {
+    if (err) {
+      console.log("error", err);
       return res.json({ error: "invalid url" });
     }
 
